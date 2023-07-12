@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+# v1.18.10
+## (2023-07-12)
+
+* spelling: validates [Josh Soref]
+* spelling: undefined [Josh Soref]
+* spelling: except if [Josh Soref]
+
+# v1.18.9
+## (2023-07-12)
+
+* Fix opening links from within SafeWebView [Akis Kesoglou]
+
 # v1.18.8
 ## (2023-04-26)
 

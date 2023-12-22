@@ -25,7 +25,6 @@ import * as settings from '../models/settings';
 import * as analytics from '../modules/analytics';
 import * as windowProgress from '../os/window-progress';
 import { startApiAndSpawnChild } from './api';
-import { terminateScanningServer } from '../app';
 
 /**
  * @summary Handle a flash error and log it to analytics
@@ -81,7 +80,13 @@ async function performWrite(
 
 	console.log({ image, drives });
 
-	return await new Promise(async (resolve, reject) => {
+	// Spawn the child process with privileges and wait for the connection to be made
+	const { emit, registerHandler, terminateServer } =
+		await startApiAndSpawnChild({
+			withPrivileges: true,
+		});
+
+	return await new Promise((resolve, reject) => {
 		const flashResults: FlashResults = {};
 
 		const analyticsData = {
@@ -92,7 +97,7 @@ async function performWrite(
 			flashInstanceUuid: flashState.getFlashUuid(),
 		};
 
-		const onFail = ({ device, error }) => {
+		const onFail = ({ device, error }: { device: any; error: any }) => {
 			console.log('fail event');
 			console.log(device);
 			console.log(error);
@@ -103,7 +108,7 @@ async function performWrite(
 			finish();
 		};
 
-		const onDone = (event) => {
+		const onDone = (event: any) => {
 			console.log('done event');
 			event.results.errors = event.results.errors.map(
 				(data: Dictionary<any> & { message: string }) => {
@@ -130,7 +135,7 @@ async function performWrite(
 			console.log('Flash results', flashResults);
 
 			// The flash wasn't cancelled and we didn't get a 'done' event
-			// Catch unexepected situation
+			// Catch unexpected situation
 			if (
 				!flashResults.cancelled &&
 				!flashResults.skip &&
@@ -151,12 +156,6 @@ async function performWrite(
 			resolve(flashResults);
 		};
 
-		// Spawn the child process with privileges and wait for the connection to be made
-		const { emit, registerHandler, terminateServer } =
-			await startApiAndSpawnChild({
-				withPrivileges: true,
-			});
-
 		registerHandler('state', onProgress);
 		registerHandler('fail', onFail);
 		registerHandler('done', onDone);
@@ -166,15 +165,15 @@ async function performWrite(
 		cancelEmitter = (cancelStatus: string) => emit(cancelStatus);
 
 		// Now that we know we're connected we can instruct the child process to start the write
-		const paramaters = {
+		const parameters = {
 			image,
 			destinations: drives,
 			SourceType: image.SourceType,
 			autoBlockmapping,
 			decompressFirst,
 		};
-		console.log('params', paramaters);
-		emit('write', paramaters);
+		console.log('params', parameters);
+		emit('write', parameters);
 	});
 
 	// The process continue in the event handler

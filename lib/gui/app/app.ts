@@ -38,7 +38,6 @@ import * as windowProgress from './os/window-progress';
 import MainPage from './pages/main/MainPage';
 import './css/main.css';
 import * as i18next from 'i18next';
-import { promises } from 'dns';
 import { SourceMetadata } from '../../shared/typings/source-selector';
 
 window.addEventListener(
@@ -135,7 +134,7 @@ function setDrives(drives: Dictionary<DrivelistDrive>) {
 	}
 }
 
-// Spwaning the child process without privileges to get the drives list
+// Spawning the child process without privileges to get the drives list
 // TODO: clean up this mess of exports
 export let requestMetadata: any;
 
